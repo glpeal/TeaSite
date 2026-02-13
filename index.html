@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>茶道 Chinese Tea Shop</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Serif+SC:wght@500;600;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --red: #8b0000;
+      --gold: #c5943a;
+      --cream: #fff8e7;
+      --ink: #1a1a2e;
+      --dark-gold: #b8860b;
+      --text: #2c2c2c;
+      --white: #fff;
+      --jade: #2d5016;
+      --container: min(1200px, 92vw);
+      --shadow: 0 16px 40px rgba(0,0,0,.14);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: Inter, sans-serif;
+      color: var(--text);
+      background: linear-gradient(180deg, #fffcf2 0%, #fff 30%, #fff 100%);
+      overflow-x: hidden;
+    }
+    .container { width: var(--container); margin: 0 auto; }
+    section { padding: 92px 0; position: relative; }
+    h1, h2, h3 { font-family: "Playfair Display", serif; }
+    h1 { font-size: clamp(34px, 5.5vw, 64px); letter-spacing: 2px; }
+    h2 { font-size: clamp(30px, 4vw, 42px); margin-bottom: 24px; }
+    p { font-size: clamp(15px, 2vw, 18px); line-height: 1.72; }
+
+    .section-title { text-align: center; margin-bottom: 42px; }
+    .section-title::after {
+      content: "";
+      display: block;
+      width: 76px;
+      height: 2px;
+      margin: 14px auto 0;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 10px;
+      padding: 13px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: .3s ease;
+    }
+    .btn-primary { background: var(--red); color: #fff; }
+    .btn-primary:hover { background: #700; transform: translateY(-2px); }
+
+    .fade-element { opacity: 0; transform: translateY(30px); transition: opacity .7s ease-out, transform .7s ease-out; }
+    .fade-left { transform: translateX(-30px); }
+    .fade-right { transform: translateX(30px); }
+    .fade-element.visible { opacity: 1; transform: none; }
+
+    #header {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 1000;
+      transition: .3s;
+      border-bottom: 1px solid transparent;
+    }
+    #header.scrolled {
+      background: rgba(26,26,46,.93);
+      backdrop-filter: blur(10px);
+      border-color: rgba(197,148,58,.25);
+    }
+    .header-inner {
+      width: var(--container);
+      margin: 0 auto;
+      min-height: 78px;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 20px;
+    }
+    .logo {
+      font-family: "Noto Serif SC", serif;
+      color: #fff;
+      text-decoration: none;
+      font-size: clamp(24px, 2vw, 31px);
+    }
+    nav ul { list-style: none; display: flex; gap: 18px; }
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      position: relative;
+      font-weight: 500;
+    }
+    nav a::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -6px;
+      width: 100%;
+      height: 1px;
+      background: var(--gold);
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform .3s;
+    }
+    nav a:hover::after { transform: scaleX(1); transform-origin: left; }
+
+    .header-actions { justify-self: end; display: flex; gap: 14px; align-items: center; color: #fff; }
+    .cart-btn { background: none; border: 0; color: #fff; font-size: 24px; cursor: pointer; position: relative; }
+    .cart-count {
+      position: absolute;
+      top: -5px;
+      right: -10px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: #111;
+      background: var(--gold);
+    }
+    .cart-count.bump { animation: bump .35s ease; }
+    .lang-switch { display: flex; gap: 7px; }
+    .lang-switch button { background: none; border: 1px solid rgba(255,255,255,.4); color: #fff; border-radius: 999px; padding: 4px 9px; cursor: pointer; }
+    .burger { display: none; background: none; border: 0; color: #fff; font-size: 25px; }
+
+    #hero {
+      min-height: 100vh;
+      background: radial-gradient(circle at 20% 20%, rgba(139,0,0,.25), transparent 42%), linear-gradient(rgba(0,0,0,.58), rgba(0,0,0,.52)), url("pics/examples/example 1.jfif") center/cover fixed;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      color: #fff;
+      overflow: hidden;
+    }
+    #hero::before {
+      content: "茶";
+      position: absolute;
+      font-family: "Noto Serif SC", serif;
+      font-size: clamp(140px, 20vw, 260px);
+      color: rgba(255,255,255,.06);
+      right: 7%;
+      top: 12%;
+      pointer-events: none;
+    }
+    .hero-content { width: min(850px, 92vw); margin-top: 60px; }
+    .hero-line { width: 80px; height: 2px; margin: 20px auto; background: var(--gold); }
+    .hero-sub { margin-bottom: 30px; }
+    .scroll-indicator {
+      position: absolute;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%);
+      font-size: 30px;
+      animation: bounce 1.9s infinite;
+    }
+
+    #advantages { background: var(--cream); }
+    .adv-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+    .adv-card {
+      background: linear-gradient(180deg, #fff, #fffdfa);
+      border: 1px solid rgba(197,148,58,.28);
+      border-radius: 14px;
+      padding: 26px 20px;
+      text-align: center;
+      transition: .3s;
+    }
+    .adv-card:hover { transform: translateY(-8px); box-shadow: var(--shadow); }
+    .adv-icon { font-size: 44px; color: var(--gold); margin-bottom: 11px; }
+
+    #catalog { background: #fff; }
+    .filters { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 24px; }
+    .filter-btn { border: 1px solid #ddd; background: transparent; border-radius: 999px; padding: 10px 16px; cursor: pointer; }
+    .filter-btn.active { background: var(--red); border-color: var(--red); color: #fff; }
+    .catalog-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; transition: opacity .3s; }
+    .catalog-grid.filtering { opacity: 0; }
+    .product-card {
+      border-radius: 14px;
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid #eee;
+      display: flex;
+      flex-direction: column;
+      transition: .3s;
+      box-shadow: 0 10px 25px rgba(0,0,0,.05);
+    }
+    .product-card:hover { transform: translateY(-8px); box-shadow: var(--shadow); }
+    .product-image-wrap { aspect-ratio: 1/1; overflow: hidden; position: relative; cursor: pointer; }
+    .product-image { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; }
+    .product-card:hover .product-image { transform: scale(1.05); }
+    .badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 20px;
+      color: #fff;
+      background: rgba(26,26,46,.9);
+    }
+    .badge.green { background: var(--jade); }
+    .product-body { padding: 15px; display: grid; gap: 10px; flex: 1; }
+    .zh { font-family: "Noto Serif SC", serif; color: #666; font-size: 15px; }
+    .description { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 52px; }
+    .weight-group { display: flex; gap: 8px; }
+    .weight-btn { border: 1px solid #ddd; background: #fff; border-radius: 18px; padding: 6px 11px; cursor: pointer; }
+    .weight-btn.active { border-color: var(--red); color: var(--red); }
+    .price { color: var(--gold); font-family: "Playfair Display", serif; font-size: clamp(22px, 3vw, 28px); font-weight: 700; }
+
+    #about-tea, #contacts { background: var(--ink); color: #fff; }
+    .split { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 34px; }
+    .framed-image { width: 100%; border: 2px solid var(--gold); border-radius: 16px; max-height: 500px; object-fit: cover; box-shadow: var(--shadow); }
+    .bg-char {
+      position: absolute;
+      right: 6%;
+      top: 12%;
+      opacity: .06;
+      font-family: "Noto Serif SC", serif;
+      font-size: 220px;
+      pointer-events: none;
+    }
+
+    #brewing, #about-us { background: var(--cream); }
+    .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .step { background: #fff; border-radius: 14px; border: 1px solid rgba(197,148,58,.22); padding: 20px; text-align: center; }
+    .step .icon { color: var(--gold); font-size: 34px; margin-bottom: 8px; }
+
+    .reviews-wrap { max-width: 780px; margin: 0 auto; text-align: center; }
+    .review-card { border: 1px solid #eee; border-radius: 14px; min-height: 250px; padding: 24px; display: grid; place-items: center; transition: opacity .3s; background: linear-gradient(180deg, #fff, #fffdf7); }
+    .avatar { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; border: 2px solid rgba(197,148,58,.4); }
+    .stars { margin-top: 10px; color: var(--gold); font-size: 20px; }
+    .review-controls { display: flex; gap: 12px; justify-content: center; margin-top: 12px; }
+    .review-controls button { width: 38px; height: 38px; border-radius: 50%; border: 1px solid #ccc; background: #fff; cursor: pointer; }
+    .dots { display: flex; justify-content: center; gap: 8px; margin-top: 10px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; border: 0; background: #ddd; }
+    .dot.active { background: var(--red); }
+
+    .stats { margin-top: 24px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .stat { background: #fff; border-radius: 12px; padding: 15px; text-align: center; border: 1px solid rgba(197,148,58,.24); }
+    .num { color: var(--gold); font-size: 28px; font-weight: 700; font-family: "Playfair Display", serif; }
+
+    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+    .contact-list { list-style: none; display: grid; gap: 10px; }
+    .socials { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+    .socials a { color: #fff; border: 1px solid rgba(255,255,255,.35); border-radius: 999px; text-decoration: none; padding: 8px 12px; }
+    form { display: grid; gap: 13px; }
+    input, textarea { background: transparent; border: 0; border-bottom: 1px solid var(--gold); color: #fff; padding: 9px 4px; font-size: 16px; }
+    input:focus, textarea:focus { outline: none; box-shadow: 0 4px 14px rgba(197,148,58,.3); }
+
+    footer { background: #111; color: #fff; border-top: 1px solid var(--gold); padding: 42px 0; }
+    .footer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .footer-links { list-style: none; display: grid; gap: 8px; }
+    .footer-links a { text-decoration: none; color: #fff; }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.5);
+      backdrop-filter: blur(9px);
+      opacity: 0;
+      visibility: hidden;
+      transition: .3s;
+      z-index: 1200;
+    }
+    .overlay.open { opacity: 1; visibility: visible; }
+
+    #cart-panel {
+      position: fixed;
+      top: 0;
+      right: -390px;
+      width: min(380px, 92vw);
+      height: 100vh;
+      background: #fff;
+      z-index: 1300;
+      transition: right .3s;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+    }
+    #cart-panel.open { right: 0; }
+    .cart-items { margin: 13px 0; display: grid; gap: 11px; overflow: auto; flex: 1; }
+    .cart-item { display: grid; grid-template-columns: 62px 1fr auto; gap: 8px; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+    .cart-item img { width: 62px; height: 62px; border-radius: 8px; object-fit: cover; }
+    .qty { display: flex; align-items: center; gap: 6px; }
+    .qty button { width: 24px; height: 24px; }
+
+    #product-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 1400;
+      display: grid;
+      place-items: center;
+      opacity: 0;
+      visibility: hidden;
+      background: rgba(0,0,0,.62);
+      transition: .3s;
+    }
+    #product-modal.open { opacity: 1; visibility: visible; }
+    .modal-content { width: min(920px, 92vw); max-height: 88vh; overflow: auto; border-radius: 14px; background: #fff; padding: 18px; transform: scale(.9); transition: .3s; }
+    #product-modal.open .modal-content { transform: scale(1); }
+
+    .mobile-nav {
+      position: fixed;
+      top: 0;
+      right: -300px;
+      width: 280px;
+      height: 100vh;
+      background: rgba(26,26,46,.95);
+      backdrop-filter: blur(10px);
+      z-index: 1250;
+      transition: right .3s;
+      padding: 80px 24px;
+    }
+    .mobile-nav.open { right: 0; }
+    .mobile-nav a { color: #fff; text-decoration: none; display: block; padding: 12px 0; }
+
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      background: var(--ink);
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 8px;
+      border-left: 4px solid var(--gold);
+      opacity: 0;
+      pointer-events: none;
+      transition: .3s;
+      z-index: 1500;
+    }
+    .toast.show { opacity: 1; }
+
+    @keyframes bounce { 0%,100% { transform: translate(-50%,0); } 50% { transform: translate(-50%,-9px); } }
+    @keyframes bump { 50% { transform: scale(1.28); } }
+
+    @media (max-width: 1024px) {
+      nav { display: none; }
+      .burger { display: inline-block; }
+      .catalog-grid { grid-template-columns: repeat(2, 1fr); }
+      .adv-grid, .steps, .stats { grid-template-columns: repeat(2, 1fr); }
+      .header-inner { grid-template-columns: auto 1fr auto; }
+    }
+    @media (max-width: 768px) {
+      section { padding: 74px 0; }
+      .catalog-grid, .adv-grid, .steps, .stats, .split, .contact-grid, .footer-grid { grid-template-columns: 1fr; }
+      .lang-switch { display: none; }
+      .btn, .filter-btn { min-height: 42px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+      .fade-element { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <header id="header">
+    <div class="header-inner">
+      <a href="#hero" class="logo">茶道 Chinese Tea</a>
+      <nav>
+        <ul>
+          <li><a href="#hero">Главная</a></li>
+          <li><a href="#catalog">Каталог</a></li>
+          <li><a href="#about-tea">О чае</a></li>
+          <li><a href="#about-us">О нас</a></li>
+          <li><a href="#contacts">Контакты</a></li>
+        </ul>
+      </nav>
+      <div class="header-actions">
+        <button class="cart-btn" id="cart-open" aria-label="Корзина">🛒<span class="cart-count" id="cart-count">0</span></button>
+        <div class="lang-switch"><button>RU</button><button>EN</button><button>中</button></div>
+        <button class="burger" id="burger">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <aside id="mobile-nav" class="mobile-nav">
+    <a href="#hero">Главная</a><a href="#catalog">Каталог</a><a href="#about-tea">О чае</a><a href="#about-us">О нас</a><a href="#contacts">Контакты</a>
+  </aside>
+
+  <section id="hero">
+    <div class="hero-content">
+      <h1 class="fade-element">Искусство китайского чая</h1>
+      <div class="hero-line fade-element" style="transition-delay:.2s"></div>
+      <p class="hero-sub fade-element" style="transition-delay:.4s">Традиции, проверенные веками</p>
+      <a href="#catalog" class="btn btn-primary fade-element" style="display:inline-block;text-decoration:none;transition-delay:.6s">Выбрать чай</a>
+    </div>
+    <div class="scroll-indicator">⌄</div>
+  </section>
+
+  <section id="advantages">
+    <div class="container">
+      <h2 class="section-title fade-element">Почему выбирают нас</h2>
+      <div class="adv-grid">
+        <article class="adv-card fade-element" style="transition-delay:.05s"><div class="adv-icon">✈</div><h3>Прямые поставки из Китая</h3><p>Работаем напрямую с чайными хозяйствами без посредников.</p></article>
+        <article class="adv-card fade-element" style="transition-delay:.2s"><div class="adv-icon">🍃</div><h3>Только премиум-сорта</h3><p>Отборный лист, понятное происхождение, честное качество.</p></article>
+        <article class="adv-card fade-element" style="transition-delay:.35s"><div class="adv-icon">🫖</div><h3>Гид по завариванию</h3><p>Подскажем температуру, пролив и посуду под каждый сорт.</p></article>
+        <article class="adv-card fade-element" style="transition-delay:.5s"><div class="adv-icon">📦</div><h3>Быстрая доставка</h3><p>Отправка в день заказа и бережная упаковка каждого чая.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="catalog">
+    <div class="container">
+      <h2 class="section-title fade-element">Каталог китайского чая</h2>
+      <div id="filters" class="filters fade-element"></div>
+      <div id="catalog-grid" class="catalog-grid"></div>
+    </div>
+  </section>
+
+  <section id="about-tea">
+    <span class="bg-char">茶</span>
+    <div class="container split">
+      <img src="pics/examples/example 2.jfif" class="framed-image fade-element fade-left" alt="Чайная плантация" />
+      <div class="fade-element fade-right">
+        <h2>О китайском чае</h2>
+        <p>Чайная традиция Китая формировалась веками: от императорских дворцов до камерных чайных домов. Каждый сорт раскрывается по-своему — пуэр согревает и углубляет, улун даёт ароматную многослойность, белые чаи дарят мягкость и ясность. Мы сохраняем эту культуру через качественный лист и уважение к ритуалу заваривания.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="brewing">
+    <div class="container">
+      <h2 class="section-title fade-element">Гид по завариванию</h2>
+      <div class="steps">
+        <article class="step fade-element" style="transition-delay:.1s"><div class="icon">♨</div><h3>Нагрейте воду</h3><p>80–95°C в зависимости от чая.</p></article>
+        <article class="step fade-element" style="transition-delay:.25s"><div class="icon">🍶</div><h3>Прогрейте посуду</h3><p>Залейте кипяток и слейте.</p></article>
+        <article class="step fade-element" style="transition-delay:.4s"><div class="icon">💧</div><h3>Промойте чай</h3><p>Первая заливка — 5 секунд.</p></article>
+        <article class="step fade-element" style="transition-delay:.55s"><div class="icon">☯</div><h3>Наслаждайтесь</h3><p>15–60 секунд, многократные проливы.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="reviews">
+    <div class="container">
+      <h2 class="section-title fade-element">Отзывы клиентов</h2>
+      <div class="reviews-wrap fade-element" id="reviews-wrap">
+        <article class="review-card" id="review-card"></article>
+        <div class="review-controls"><button id="prev-review">←</button><button id="next-review">→</button></div>
+        <div class="dots" id="review-dots"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="about-us">
+    <div class="container split">
+      <img src="pics/logos/logo 1.jfif" class="framed-image fade-element fade-left" alt="Команда" />
+      <div class="fade-element fade-right">
+        <h2>О нас</h2>
+        <p>Cha-hai — это не просто магазин, а тщательно отобранная коллекция чая для тех, кто ценит подлинность. Мы проверяем сырьё, дегустируем лоты и выбираем то, что действительно стоит вашего внимания.</p>
+      </div>
+    </div>
+    <div class="container stats" id="stats">
+      <div class="stat"><div class="num" data-target="500">0</div><p>сортов чая</p></div>
+      <div class="stat"><div class="num" data-target="10000">0</div><p>довольных клиентов</p></div>
+      <div class="stat"><div class="num" data-target="5">0</div><p>лет на рынке</p></div>
+      <div class="stat"><div class="num" data-target="15">0</div><p>провинций Китая</p></div>
+    </div>
+  </section>
+
+  <section id="contacts">
+    <div class="container contact-grid">
+      <div class="fade-element fade-left">
+        <h2>Контакты</h2>
+        <ul class="contact-list">
+          <li>📞 +7 (900) 123-45-67</li>
+          <li>✉ hello@chadao-tea.ru</li>
+          <li>📍 Москва, ул. Чайная, 8</li>
+        </ul>
+        <div class="socials"><a href="#">Instagram</a><a href="#">Telegram</a><a href="#">WhatsApp</a></div>
+      </div>
+      <form id="contact-form" class="fade-element fade-right">
+        <input type="text" placeholder="Имя" required />
+        <input type="email" placeholder="Email" required />
+        <textarea rows="4" placeholder="Сообщение" required></textarea>
+        <button class="btn" style="background:var(--gold);color:#111">Отправить</button>
+      </form>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container footer-grid">
+      <div><div class="logo" style="font-size:24px">茶道 Chinese Tea</div><p style="margin-top:10px">Премиальные китайские чаи и культура чайной церемонии.</p></div>
+      <ul class="footer-links"><li><a href="#hero">Главная</a></li><li><a href="#catalog">Каталог</a></li><li><a href="#about-tea">О чае</a></li><li><a href="#contacts">Контакты</a></li></ul>
+      <div><p>Соцсети: Telegram • Instagram • WhatsApp</p><p style="margin-top:12px">© 2026 茶道 Chinese Tea Shop</p></div>
+    </div>
+  </footer>
+
+  <div id="overlay" class="overlay"></div>
+  <aside id="cart-panel">
+    <h3>Ваша корзина</h3>
+    <div class="cart-items" id="cart-items"></div>
+    <p><strong>Итого: <span id="cart-total">0 ₽</span></strong></p>
+    <button id="checkout-btn" class="btn btn-primary">Оформить заказ</button>
+  </aside>
+
+  <div id="product-modal"><div class="modal-content" id="modal-content"></div></div>
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const products = [
+      { id: 1, name: "Императорский Гун Тин Шу Пуэр", nameZh: "熟普洱", category: "puer", categoryLabel: "Пуэр", description: "Густой рубиновый настой, чернослив, старое дерево.", fullDescription: "Премиальный дворцовый шу пуэр из Юньнани. Глубокий вкус, мягкая энергия и долгое согревающее послевкусие.", image: "pics/Императорский Гун Тин Шу Пуэр премиум класса/main 8.jpg", prices: { 50: 890, 100: 1590, 250: 3490 }, brewing: { temp: "95°C", time: "15–30с", steeps: "10–15" }, province: "Юньнань", year: 2019 },
+      { id: 2, name: "Шу Пуэр в мандарине", nameZh: "柑普", category: "puer", categoryLabel: "Пуэр", description: "Цитрус, медовые ноты и мягкая шу-пуэрная база.", fullDescription: "Цельный мандарин с выдержанным шу пуэром. Ароматный, согревающий и очень уютный чай.", image: "pics/Шу Пуэр в мандарине премиум класса/main 16.jpg", prices: { 50: 1150, 100: 2090, 250: 4890 }, brewing: { temp: "95°C", time: "20–40с", steeps: "8–12" }, province: "Синьхуэй", year: 2021 },
+      { id: 3, name: "Блин Шу Пуэра Фэйтянь", nameZh: "飞天熟饼", category: "puer", categoryLabel: "Пуэр", description: "Бархатный профиль, шоколадные и древесные ноты.", fullDescription: "Прессованный блин с аккуратной ферментацией и чистым, глубоким вкусом.", image: "pics/Блин Шу пуэра Фэйтянь/main 1.jpg", prices: { 50: 760, 100: 1390, 250: 3090 }, brewing: { temp: "95°C", time: "15–25с", steeps: "8–12" }, province: "Юньнань", year: 2020 },
+      { id: 4, name: "Да Хун Пао", nameZh: "大红袍", category: "oolong", categoryLabel: "Улун", description: "Минеральность утёсного улуна, карамель и орех.", fullDescription: "Классика Уишаньских утёсов: объёмный вкус, богатый аромат и долгое послевкусие.", image: "pics/Да Хун Пао 1-го класса(Большой красный халат)/main 4.jpg", prices: { 50: 1190, 100: 2190, 250: 4990 }, brewing: { temp: "90°C", time: "20–35с", steeps: "7–10" }, province: "Фуцзянь", year: 2023 },
+      { id: 5, name: "Те Гуань Инь Ван", nameZh: "铁观音", category: "oolong", categoryLabel: "Улун", description: "Орхидея, сливочная сладость и чистое послевкусие.", fullDescription: "Высокий грейд аньсийского улуна для тонких и ароматных чаепитий.", image: "pics/Те Гуань Инь Ван премиум класса/main 14.jpg", prices: { 50: 980, 100: 1850, 250: 4190 }, brewing: { temp: "88°C", time: "15–25с", steeps: "8–10" }, province: "Аньси", year: 2024 },
+      { id: 6, name: "Шен Пуэр Гуан Бай", nameZh: "生普洱", category: "green", categoryLabel: "Зелёный", description: "Свежий характер, сухофрукты и лёгкая терпкость.", fullDescription: "Молодой шен с яркой чайной энергией и отличным потенциалом выдержки.", image: "pics/Шен пуэр Гуан Бай 1-го класса/main 15.jpg", prices: { 50: 840, 100: 1490, 250: 3290 }, brewing: { temp: "85°C", time: "10–20с", steeps: "10+" }, province: "Юньнань", year: 2024 },
+      { id: 7, name: "Набор «Классика Чайного Искусства»", nameZh: "经典茶礼", category: "white", categoryLabel: "Белый", description: "Подарочный набор для знакомства с чайной культурой.", fullDescription: "Сбалансированный сет из популярных сортов и формат для красивого подарка.", image: "pics/Набор «Классика Чайного Искусства»/main 9.jpg", prices: { 50: 1490, 100: 2790, 250: 5990 }, brewing: { temp: "90°C", time: "20–30с", steeps: "по сорту" }, province: "Смешанный", year: 2024 },
+      { id: 8, name: "Набор «Редкости и Экзотика»", nameZh: "珍奇茶礼", category: "red", categoryLabel: "Красный", description: "Редкие вкусы и необычные чайные лоты.", fullDescription: "Для ценителей, которые любят исследовать нестандартные чаи и редкие партии.", image: "pics/Набор «Редкости и Экзотика» (Для любопытных)/main 11.jpg", prices: { 50: 1690, 100: 3190, 250: 6990 }, brewing: { temp: "90–95°C", time: "20–35с", steeps: "по сорту" }, province: "Разные регионы", year: 2024 }
+    ];
+
+    const reviews = [
+      { name: "Алина С.", text: "Очень красивый сайт и достойный чай. Гун Тин просто шикарный.", stars: 5, avatar: "pics/logos/logo 1.jfif" },
+      { name: "Максим К.", text: "Да Хун Пао приятно удивил: аромат и вкус очень плотные.", stars: 5, avatar: "pics/examples/example 2.jfif" },
+      { name: "Юлия П.", text: "Понравился формат с выбором граммовки и подробной карточкой.", stars: 5, avatar: "pics/examples/example 1.jfif" }
+    ];
+
+    const categories = [["all","Все"],["puer","Пуэр"],["oolong","Улун"],["green","Зелёный"],["red","Красный"],["white","Белый"]];
+    const state = { filter: "all", weights: {}, cart: JSON.parse(localStorage.getItem("tea-cart") || "{}"), reviewIndex: 0 };
+
+    const grid = document.getElementById("catalog-grid");
+    const filters = document.getElementById("filters");
+    const cartItems = document.getElementById("cart-items");
+    const cartTotal = document.getElementById("cart-total");
+    const cartCount = document.getElementById("cart-count");
+    const overlay = document.getElementById("overlay");
+    const cartPanel = document.getElementById("cart-panel");
+    const mobileNav = document.getElementById("mobile-nav");
+
+    const formatPrice = v => `${v.toLocaleString("ru-RU")} ₽`;
+    function toast(msg) { const t = document.getElementById("toast"); t.textContent = msg; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 2000); }
+
+    function renderFilters() {
+      filters.innerHTML = categories.map(([k,l]) => `<button class="filter-btn ${state.filter===k?"active":""}" data-filter="${k}">${l}</button>`).join("");
+    }
+
+    function renderCatalog() {
+      const data = state.filter === "all" ? products : products.filter(p => p.category === state.filter);
+      grid.innerHTML = data.map((p,i) => {
+        const w = state.weights[p.id] || 50;
+        return `<article class="product-card fade-element" style="transition-delay:${i*.06}s">
+          <div class="product-image-wrap" data-open="${p.id}"><img class="product-image" src="${p.image}" alt="${p.name}" /><span class="badge ${p.category==='green'?'green':''}">${p.categoryLabel}</span></div>
+          <div class="product-body">
+            <h3>${p.name}</h3><div class="zh">${p.nameZh}</div><p class="description">${p.description}</p>
+            <div class="weight-group">${[50,100,250].map(x => `<button class="weight-btn ${w===x?"active":""}" data-weight="${x}" data-id="${p.id}">${x}г</button>`).join("")}</div>
+            <div class="price" id="price-${p.id}">${formatPrice(p.prices[w])}</div>
+            <button class="btn btn-primary" data-add="${p.id}">В корзину</button>
+          </div>
+        </article>`;
+      }).join("");
+      setupObserver();
+    }
+
+    filters.addEventListener("click", e => {
+      const b = e.target.closest("[data-filter]");
+      if (!b) return;
+      state.filter = b.dataset.filter;
+      renderFilters();
+      grid.classList.add("filtering");
+      setTimeout(() => { renderCatalog(); grid.classList.remove("filtering"); }, 280);
+    });
+
+    document.addEventListener("click", e => {
+      const wb = e.target.closest("[data-weight]");
+      if (wb) {
+        const id = +wb.dataset.id;
+        const w = +wb.dataset.weight;
+        state.weights[id] = w;
+        const p = products.find(x => x.id === id);
+        document.getElementById(`price-${id}`).textContent = formatPrice(p.prices[w]);
+        wb.parentElement.querySelectorAll(".weight-btn").forEach(x => x.classList.toggle("active", x===wb));
+      }
+
+      const add = e.target.closest("[data-add]");
+      if (add) addToCart(+add.dataset.add, state.weights[+add.dataset.add] || 50);
+
+      const open = e.target.closest("[data-open]");
+      if (open) openModal(+open.dataset.open);
+    });
+
+    const Cart = {
+      save() { localStorage.setItem("tea-cart", JSON.stringify(state.cart)); },
+      add(id, weight) { const key = `${id}-${weight}`; state.cart[key] = state.cart[key] || { id, weight, qty: 0 }; state.cart[key].qty += 1; this.save(); },
+      remove(key) { delete state.cart[key]; this.save(); },
+      update(key, d) { state.cart[key].qty += d; if (state.cart[key].qty <= 0) this.remove(key); this.save(); },
+      total() { return Object.values(state.cart).reduce((s, i) => { const p = products.find(x => x.id===i.id); return s + p.prices[i.weight] * i.qty; }, 0); }
+    };
+
+    function addToCart(id, weight) { Cart.add(id, weight); renderCart(); cartCount.classList.add("bump"); setTimeout(() => cartCount.classList.remove("bump"), 350); toast("Добавлено в корзину!"); }
+
+    function renderCart() {
+      const entries = Object.entries(state.cart);
+      cartItems.innerHTML = entries.length ? entries.map(([key,item]) => {
+        const p = products.find(x => x.id === item.id);
+        const subtotal = p.prices[item.weight] * item.qty;
+        return `<div class="cart-item"><img src="${p.image}" alt="${p.name}"><div><strong>${p.name}</strong><div>${item.weight}г · ${formatPrice(subtotal)}</div><div class="qty"><button data-q="-1" data-key="${key}">−</button><span>${item.qty}</span><button data-q="1" data-key="${key}">+</button></div></div><button data-del="${key}">✕</button></div>`;
+      }).join("") : "<p>Корзина пуста.</p>";
+      cartTotal.textContent = formatPrice(Cart.total());
+      cartCount.textContent = entries.reduce((s,[,i]) => s + i.qty, 0);
+    }
+
+    cartItems.addEventListener("click", e => {
+      const d = e.target.dataset;
+      if (d.del) Cart.remove(d.del);
+      if (d.q) Cart.update(d.key, +d.q);
+      renderCart();
+    });
+
+    function closePanels() { overlay.classList.remove("open"); cartPanel.classList.remove("open"); mobileNav.classList.remove("open"); if (!document.getElementById("product-modal").classList.contains("open")) document.body.style.overflow = ""; }
+    document.getElementById("cart-open").addEventListener("click", () => { overlay.classList.add("open"); cartPanel.classList.add("open"); document.body.style.overflow = "hidden"; });
+    overlay.addEventListener("click", closePanels);
+
+    const modal = document.getElementById("product-modal");
+    const modalContent = document.getElementById("modal-content");
+    function openModal(id) {
+      const p = products.find(x => x.id === id);
+      const w = state.weights[id] || 50;
+      modalContent.innerHTML = `<button id="modal-close" style="float:right;border:0;background:none;font-size:24px;cursor:pointer">×</button>
+      <div class="split" style="margin-top:20px"><img src="${p.image}" class="framed-image" alt="${p.name}"><div><h2>${p.name}</h2><p class="zh">${p.nameZh}</p><p>${p.fullDescription}</p><p><strong>Провинция:</strong> ${p.province} · <strong>Год:</strong> ${p.year}</p><p><strong>Заваривание:</strong> ${p.brewing.temp}, ${p.brewing.time}, проливов ${p.brewing.steeps}</p><div class="weight-group" style="margin:12px 0">${[50,100,250].map(x => `<button class="weight-btn ${w===x?"active":""}" data-modal-weight="${x}" data-id="${id}">${x}г</button>`).join("")}</div><button class="btn btn-primary" data-add="${id}">В корзину</button></div></div>`;
+      modal.classList.add("open");
+      document.body.style.overflow = "hidden";
+    }
+    function closeModal() { modal.classList.remove("open"); if (!cartPanel.classList.contains("open") && !mobileNav.classList.contains("open")) document.body.style.overflow = ""; }
+    modal.addEventListener("click", e => { if (e.target === modal || e.target.id === "modal-close") closeModal(); });
+    document.addEventListener("keydown", e => { if (e.key === "Escape") { closeModal(); closePanels(); }});
+    modalContent.addEventListener("click", e => {
+      const b = e.target.closest("[data-modal-weight]");
+      if (!b) return;
+      state.weights[+b.dataset.id] = +b.dataset.modalWeight;
+      modalContent.querySelectorAll("[data-modal-weight]").forEach(x => x.classList.toggle("active", x===b));
+    });
+
+    const reviewCard = document.getElementById("review-card");
+    const reviewDots = document.getElementById("review-dots");
+    let reviewTimer;
+    function renderReview() {
+      const r = reviews[state.reviewIndex];
+      reviewCard.style.opacity = "0";
+      setTimeout(() => {
+        reviewCard.innerHTML = `<div><img class="avatar" src="${r.avatar}" alt="${r.name}"><h3>${r.name}</h3><p>${r.text}</p><div class="stars">${"★".repeat(r.stars)}</div></div>`;
+        reviewCard.style.opacity = "1";
+        [...reviewDots.children].forEach((d,i) => d.classList.toggle("active", i===state.reviewIndex));
+      }, 140);
+    }
+    function nextReview(step=1) { state.reviewIndex = (state.reviewIndex + step + reviews.length) % reviews.length; renderReview(); }
+    function startReviews() { reviewTimer = setInterval(() => nextReview(1), 5000); }
+    function stopReviews() { clearInterval(reviewTimer); }
+
+    document.getElementById("prev-review").addEventListener("click", () => nextReview(-1));
+    document.getElementById("next-review").addEventListener("click", () => nextReview(1));
+    reviewDots.innerHTML = reviews.map((_,i) => `<button class="dot ${i===0?"active":""}" data-dot="${i}"></button>`).join("");
+    reviewDots.addEventListener("click", e => { const d = e.target.closest("[data-dot]"); if (!d) return; state.reviewIndex = +d.dataset.dot; renderReview(); });
+
+    const reviewsWrap = document.getElementById("reviews-wrap");
+    reviewsWrap.addEventListener("mouseenter", stopReviews);
+    reviewsWrap.addEventListener("mouseleave", startReviews);
+    let touchX = 0;
+    reviewsWrap.addEventListener("touchstart", e => touchX = e.changedTouches[0].clientX);
+    reviewsWrap.addEventListener("touchend", e => { const d = e.changedTouches[0].clientX - touchX; if (Math.abs(d) > 35) nextReview(d < 0 ? 1 : -1); });
+
+    window.addEventListener("scroll", () => document.getElementById("header").classList.toggle("scrolled", window.scrollY > 50));
+    document.getElementById("burger").addEventListener("click", () => { mobileNav.classList.toggle("open"); overlay.classList.toggle("open", mobileNav.classList.contains("open")); document.body.style.overflow = mobileNav.classList.contains("open") ? "hidden" : ""; });
+    mobileNav.querySelectorAll("a").forEach(a => a.addEventListener("click", closePanels));
+
+    let countersStarted = false;
+    function animateCounters() {
+      if (countersStarted) return;
+      countersStarted = true;
+      document.querySelectorAll(".num").forEach(el => {
+        const target = +el.dataset.target;
+        const start = performance.now();
+        const dur = 1400;
+        const frame = now => {
+          const p = Math.min((now-start)/dur, 1);
+          el.textContent = Math.floor(target*p).toLocaleString("ru-RU") + (target >= 500 ? "+" : "");
+          if (p < 1) requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      });
+    }
+
+    function setupObserver() {
+      const io = new IntersectionObserver(entries => entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add("visible"); }), { threshold: .15 });
+      document.querySelectorAll(".fade-element").forEach(el => io.observe(el));
+    }
+    new IntersectionObserver(entries => entries.forEach(e => { if (e.isIntersecting) animateCounters(); }), { threshold: .25 }).observe(document.getElementById("stats"));
+
+    document.getElementById("contact-form").addEventListener("submit", e => { e.preventDefault(); e.target.reset(); toast("Спасибо! Мы свяжемся с вами"); });
+    document.getElementById("checkout-btn").addEventListener("click", () => toast("Спасибо! Бэкенд в разработке"));
+
+    renderFilters();
+    renderCatalog();
+    renderCart();
+    renderReview();
+    startReviews();
+    setupObserver();
+  </script>
+</body>
+</html>
