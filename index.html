@@ -156,6 +156,28 @@ img{max-width:100%;display:block}
 .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--bg3);color:var(--text);padding:14px 28px;border-radius:4px;border:1px solid var(--gold);font-size:14px;z-index:300;transition:.4s;opacity:0;pointer-events:none}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 
+/* ORDER MODAL */
+.order-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:300;justify-content:center;align-items:center}
+.order-modal-bg.open{display:flex}
+.order-modal{background:var(--bg2);border:1px solid rgba(200,168,110,.2);border-radius:6px;padding:32px;max-width:440px;width:90%}
+.order-modal h3{font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--text);margin-bottom:6px;text-align:center}
+.order-modal .modal-sub{color:var(--text3);font-size:13px;text-align:center;margin-bottom:20px}
+.contact-type{display:flex;gap:10px;margin-bottom:16px}
+.contact-type label{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;border:1px solid var(--bg4);border-radius:4px;cursor:pointer;transition:.3s;color:var(--text2);font-size:14px}
+.contact-type label:hover,.contact-type label.sel{border-color:var(--gold);color:var(--gold)}
+.contact-type input{display:none}
+.order-modal input[type=text],.order-modal textarea{width:100%;padding:12px 16px;background:var(--bg);border:1px solid var(--bg4);border-radius:4px;color:var(--text);font-size:14px;font-family:inherit;transition:.3s;margin-bottom:12px;outline:none}
+.order-modal input[type=text]:focus,.order-modal textarea:focus{border-color:var(--gold)}
+.order-modal input::placeholder,.order-modal textarea::placeholder{color:var(--text3)}
+.order-modal textarea{resize:vertical;min-height:60px}
+.modal-btns{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.modal-btns .btn-submit{padding:14px;background:var(--gold);color:#000;border:none;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:2px;cursor:pointer;transition:.3s;border-radius:2px}
+.modal-btns .btn-submit:hover{background:var(--gold3)}
+.modal-btns .btn-cancel{padding:10px;background:transparent;border:1px solid var(--bg4);color:var(--text2);font-size:13px;cursor:pointer;transition:.3s;border-radius:2px}
+.modal-btns .btn-cancel:hover{border-color:var(--text2);color:var(--text)}
+.btn-request{width:100%;padding:14px;margin-top:10px;background:transparent;border:1px solid var(--gold);color:var(--gold);font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:2px;cursor:pointer;transition:.3s;border-radius:2px}
+.btn-request:hover{background:rgba(200,168,110,.1)}
+
 /* FOOTER */
 .footer{padding:40px 0;border-top:1px solid rgba(200,168,110,.1);margin-top:60px}
 .footer-content{text-align:center}
@@ -323,6 +345,7 @@ img{max-width:100%;display:block}
         </div>
 
         <button class="btn-add-to-cart" onclick="addToCart()">Добавить в корзину</button>
+        <button class="btn-request" onclick="showRequestModal()">Оставить заявку</button>
         <div class="product-telegram"><a href="https://t.me/Cha_hai_tea" target="_blank">Инструкция по завариванию в Telegram</a></div>
       </div>
     </div>
@@ -353,11 +376,34 @@ img{max-width:100%;display:block}
   <div class="cart-footer" id="cartFooter" style="display:none">
     <div class="cart-min-notice" id="cartMinNotice">Минимум 5 позиций для заказа</div>
     <div class="cart-total">Итого: <span id="cartTotal">0</span> ₽</div>
-    <button class="btn-order" id="btnOrder" onclick="placeOrder()">Оформить заказ в Telegram</button>
+    <button class="btn-order" id="btnOrder" onclick="placeOrder()">Оформить заказ</button>
   </div>
 </aside>
 
 <div class="toast" id="toast"></div>
+
+<div class="order-modal-bg" id="orderModalBg" onclick="if(event.target===this)closeModal()">
+  <div class="order-modal">
+    <h3 id="modalTitle">Оформление заказа</h3>
+    <p class="modal-sub" id="modalSub">Укажите контакт — мы напишем вам</p>
+    <div class="contact-type">
+      <label class="sel" onclick="selectContactType('telegram',this)">
+        <input type="radio" name="ct" value="telegram" checked>
+        <span>Telegram</span>
+      </label>
+      <label onclick="selectContactType('whatsapp',this)">
+        <input type="radio" name="ct" value="whatsapp">
+        <span>WhatsApp</span>
+      </label>
+    </div>
+    <input type="text" id="contactInput" placeholder="@username">
+    <textarea id="modalMessage" placeholder="Сообщение (необязательно)" style="display:none"></textarea>
+    <div class="modal-btns">
+      <button class="btn-submit" id="modalSubmitBtn" onclick="submitModal()">Отправить</button>
+      <button class="btn-cancel" onclick="closeModal()">Отмена</button>
+    </div>
+  </div>
+</div>
 
 <footer class="footer">
   <div class="container">
@@ -826,15 +872,124 @@ function toggleCart() {
   document.getElementById('cartSidebar').classList.toggle('open');
 }
 
+/* ===== ORDER MODAL ===== */
+let modalMode = 'order';
+let modalContactType = 'telegram';
+
 function placeOrder() {
   if (cart.length < 5) return;
-  let msg = 'Здравствуйте! Хочу заказать:\n\n';
-  cart.forEach(item => {
-    msg += '• ' + item.name + ' — ' + item.detail + ' — ' + item.total + ' ₽\n';
-  });
-  const total = cart.reduce((s, c) => s + c.total, 0);
-  msg += '\nИтого: ' + total + ' ₽';
-  window.open('https://t.me/Cha_hai_tea?text=' + encodeURIComponent(msg), '_blank');
+  showOrderModal();
+}
+
+function showOrderModal() {
+  modalMode = 'order';
+  modalContactType = 'telegram';
+  document.getElementById('modalTitle').textContent = 'Оформление заказа';
+  document.getElementById('modalSub').textContent = 'Укажите контакт — мы напишем для подтверждения';
+  document.getElementById('modalMessage').style.display = 'none';
+  document.getElementById('contactInput').value = '';
+  document.getElementById('contactInput').placeholder = '@username';
+  document.querySelectorAll('.contact-type label').forEach((l,i) => l.classList.toggle('sel', i===0));
+  document.getElementById('orderModalBg').classList.add('open');
+}
+
+function showRequestModal() {
+  modalMode = 'request';
+  modalContactType = 'telegram';
+  document.getElementById('modalTitle').textContent = 'Оставить заявку';
+  document.getElementById('modalSub').textContent = 'Укажите контакт — мы свяжемся с вами';
+  document.getElementById('modalMessage').style.display = '';
+  document.getElementById('modalMessage').value = '';
+  document.getElementById('contactInput').value = '';
+  document.getElementById('contactInput').placeholder = '@username';
+  document.querySelectorAll('.contact-type label').forEach((l,i) => l.classList.toggle('sel', i===0));
+  document.getElementById('orderModalBg').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('orderModalBg').classList.remove('open');
+}
+
+function selectContactType(type, label) {
+  modalContactType = type;
+  document.querySelectorAll('.contact-type label').forEach(l => l.classList.remove('sel'));
+  label.classList.add('sel');
+  document.getElementById('contactInput').placeholder = type === 'telegram' ? '@username' : '+7 999 123-45-67';
+  document.getElementById('contactInput').value = '';
+}
+
+function submitModal() {
+  var contact = document.getElementById('contactInput').value.trim();
+  if (!contact) {
+    showToast('Укажите контакт для связи');
+    return;
+  }
+
+  var btn = document.getElementById('modalSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Отправка...';
+
+  if (modalMode === 'order') {
+    var payload = {
+      contactType: modalContactType,
+      contact: contact,
+      items: cart.map(function(item) { return { name: item.name, detail: item.detail, total: item.total }; }),
+      total: cart.reduce(function(s, c) { return s + c.total; }, 0)
+    };
+    fetch('/api/order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      btn.disabled = false;
+      btn.textContent = 'Отправить';
+      if (data.ok) {
+        closeModal();
+        cart = [];
+        updateCart();
+        toggleCart();
+        showToast('Заказ отправлен! Мы скоро свяжемся с вами');
+      } else {
+        showToast('Ошибка: ' + (data.error || 'попробуйте позже'));
+      }
+    })
+    .catch(function() {
+      btn.disabled = false;
+      btn.textContent = 'Отправить';
+      showToast('Ошибка сети, попробуйте позже');
+    });
+
+  } else {
+    var payload = {
+      contactType: modalContactType,
+      contact: contact,
+      productName: currentProduct ? currentProduct.name : '',
+      message: document.getElementById('modalMessage').value.trim()
+    };
+    fetch('/api/request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      btn.disabled = false;
+      btn.textContent = 'Отправить';
+      if (data.ok) {
+        closeModal();
+        showToast('Заявка отправлена! Мы скоро свяжемся с вами');
+      } else {
+        showToast('Ошибка: ' + (data.error || 'попробуйте позже'));
+      }
+    })
+    .catch(function() {
+      btn.disabled = false;
+      btn.textContent = 'Отправить';
+      showToast('Ошибка сети, попробуйте позже');
+    });
+  }
 }
 
 /* ===== TOAST ===== */
